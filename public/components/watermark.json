@@ -1,0 +1,19 @@
+{
+  "name": "Watermark",
+  "description": "Celestial watermark. UID is a cosmetic label, not a LiquidBounce account ID.",
+  "enabled": true,
+  "singleton": true,
+  "alignment": {
+    "horizontalAlignment": "Left",
+    "horizontalOffset": 10,
+    "verticalAlignment": "Top",
+    "verticalOffset": 10
+  },
+  "values": [
+    {
+      "type": "TEXT",
+      "name": "UID",
+      "value": "1"
+    }
+  ]
+}
