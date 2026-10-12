@@ -31,8 +31,9 @@
     <details class="changelog">
         <summary>Changelog</summary>
         <div class="changes">
-            <h2>Celestial Theme 1.3</h2>
-            <p><span>+</span> Nine palettes and synchronized gradient animation</p>
+            <h2>Celestial Theme 1.4</h2>
+            <p><span>+</span> Celestial, Rainbow, Astolfo and Custom color modes</p>
+            <p><span>+</span> Two-color palette editor with saved custom colors</p>
             <p><span>+</span> Celestial-styled client settings</p>
             <p><span>~</span> Live HUD settings and white editor text</p>
             <p><span>~</span> Celestial wallpaper and Inventory-style HUD cards</p>
@@ -69,7 +70,7 @@
             <IconTextButton title="liquidbounce.net" icon="icon-liquidbounce.net.svg" on:click={() => browse("CLIENT_WEBSITE")}/>
         </ButtonContainer>
     </div>
-    <footer><span>Welcome, {username}!</span><span>Version: Celestial Theme 1.3</span></footer>
+    <footer><span>Welcome, {username}!</span><span>Version: Celestial Theme 1.4</span></footer>
 </div>
 
 <style lang="scss">

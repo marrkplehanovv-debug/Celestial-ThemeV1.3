@@ -4,6 +4,17 @@
   initial-value: 0%;
 }
 
+@property --celestial-hue {
+  syntax: "<angle>";
+  inherits: true;
+  initial-value: 0deg;
+}
+
+@keyframes celestial-rainbow-flow {
+  from {--celestial-hue: 0deg;}
+  to {--celestial-hue: 360deg;}
+}
+
 @keyframes celestial-palette-flow {
   0%, 100% {--celestial-phase: 0%;}
   50% {--celestial-phase: 100%;}
@@ -13,12 +24,18 @@
   animation: celestial-palette-flow 10s ease-in-out infinite;
 }
 
+:root[data-celestial-motion="on"][data-celestial-palette="rainbow"] {
+  animation: celestial-rainbow-flow 12s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  :root[data-celestial-motion="on"] {animation: none;}
+  :root[data-celestial-motion="on"],
+  :root[data-celestial-motion="on"][data-celestial-palette="rainbow"] {animation: none;}
 }
 
 :root {
   --celestial-phase: 0%;
+  --celestial-hue: 0deg;
   --celestial-color-start: #bf68ff;
   --celestial-color-end: #35114f;
   --celestial-secondary: color-mix(in srgb, var(--celestial-color-end) calc(100% - var(--celestial-phase)), var(--celestial-color-start));

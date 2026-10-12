@@ -91,36 +91,49 @@ export function effectTime(duration: number, infinite = false): string {
 
 export const THEME_PALETTES = [
     {id: "celestial", name: "Celestial", start: "#bf68ff", end: "#35114f"},
-    {id: "crimson", name: "Crimson / Black", start: "#ff334c", end: "#080808"},
-    {id: "ocean", name: "Ocean", start: "#52d8ff", end: "#1746a8"},
-    {id: "emerald", name: "Emerald", start: "#65e9b1", end: "#125348"},
-    {id: "sunset", name: "Sunset", start: "#ffae70", end: "#b42b65"},
-    {id: "aurora", name: "Aurora", start: "#64e6ff", end: "#9e4dff"},
-    {id: "gold", name: "Gold", start: "#ffda77", end: "#73501c"},
-    {id: "rose", name: "Rose", start: "#ff9bcb", end: "#853966"},
-    {id: "client", name: "Client Accent", start: "#bf68ff", end: "#35114f"}
+    {id: "rainbow", name: "Rainbow", start: "#ff6b6b", end: "#ffd166"},
+    {id: "astolfo", name: "Astolfo", start: "#ff9ed2", end: "#9bdeff"},
+    {id: "custom", name: "Custom", start: "#bf68ff", end: "#35114f"}
 ] as const;
 
-type PaletteSettings = {id: string; animated: boolean};
+type PaletteSettings = {id: string; animated: boolean; customStart: string; customEnd: string};
+export type CustomColorKey = "customStart" | "customEnd";
 const PALETTE_KEY = "celestial.palette";
-export const themePalette = writable<PaletteSettings>({id: "celestial", animated: true});
+const DEFAULT_PALETTE: PaletteSettings = {
+    id: "celestial", animated: true, customStart: "#bf68ff", customEnd: "#35114f"
+};
+export const themePalette = writable<PaletteSettings>({...DEFAULT_PALETTE});
+
+export function normalizePaletteColor(color: string): string | null {
+    return /^#[0-9a-f]{6}$/i.test(color) ? color.toLowerCase() : null;
+}
 
 export function parseThemePalette(stored: string | null): PaletteSettings {
     try {
         const value = JSON.parse(stored ?? "null");
-        if (value && THEME_PALETTES.some(p => p.id === value.id) && typeof value.animated === "boolean") {
-            return {id: value.id, animated: value.animated};
+        if (value && typeof value.animated === "boolean") {
+            return {
+                id: THEME_PALETTES.some(p => p.id === value.id) ? value.id : "celestial",
+                animated: value.animated,
+                customStart: typeof value.customStart === "string"
+                    ? normalizePaletteColor(value.customStart) ?? DEFAULT_PALETTE.customStart : DEFAULT_PALETTE.customStart,
+                customEnd: typeof value.customEnd === "string"
+                    ? normalizePaletteColor(value.customEnd) ?? DEFAULT_PALETTE.customEnd : DEFAULT_PALETTE.customEnd
+            };
         }
     } catch {}
-    return {id: "celestial", animated: true};
+    return {...DEFAULT_PALETTE};
 }
 
 function applyThemePalette(value: PaletteSettings) {
     const palette = THEME_PALETTES.find(p => p.id === value.id) ?? THEME_PALETTES[0];
     const root = document.documentElement;
     root.style.removeProperty("--accent-color");
-    root.style.setProperty("--celestial-color-start", palette.id === "client" ? "var(--celestial-client-accent, #bf68ff)" : palette.start);
-    root.style.setProperty("--celestial-color-end", palette.id === "client" ? "color-mix(in srgb, var(--celestial-client-accent, #bf68ff) 30%, #080808)" : palette.end);
+    root.style.setProperty("--celestial-color-start", palette.id === "rainbow"
+        ? "hsl(var(--celestial-hue) 90% 65%)" : palette.id === "custom" ? value.customStart : palette.start);
+    root.style.setProperty("--celestial-color-end", palette.id === "rainbow"
+        ? "hsl(calc(var(--celestial-hue) + 75deg) 90% 65%)" : palette.id === "custom" ? value.customEnd : palette.end);
+    root.dataset.celestialPalette = palette.id;
     root.dataset.celestialMotion = value.animated ? "on" : "off";
 }
 
@@ -128,7 +141,9 @@ export function initializeThemePalette(): () => void {
     themePalette.set(parseThemePalette(localStorage.getItem(PALETTE_KEY)));
     const unsubscribe = themePalette.subscribe(applyThemePalette);
     const onStorage = (event: StorageEvent) => {
-        if (event.key === PALETTE_KEY) themePalette.set(parseThemePalette(event.newValue));
+        if (event.key === PALETTE_KEY || event.key === null) {
+            themePalette.set(parseThemePalette(localStorage.getItem(PALETTE_KEY)));
+        }
     };
     window.addEventListener("storage", onStorage);
     return () => {
@@ -139,7 +154,16 @@ export function initializeThemePalette(): () => void {
 
 export async function selectThemePalette(id: string, animated = get(themePalette).animated) {
     if (!THEME_PALETTES.some(p => p.id === id)) return;
-    const value = {id, animated};
+    await saveThemePalette({...get(themePalette), id, animated});
+}
+
+export async function updateCustomThemeColor(key: CustomColorKey, color: string) {
+    const normalized = normalizePaletteColor(color);
+    if (!normalized) return;
+    await saveThemePalette({...get(themePalette), id: "custom", [key]: normalized});
+}
+
+async function saveThemePalette(value: PaletteSettings) {
     themePalette.set(value);
     await setItem(PALETTE_KEY, JSON.stringify(value));
 }
