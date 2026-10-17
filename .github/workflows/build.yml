@@ -9,7 +9,7 @@ permissions:
 
 env:
   ZIP_NAME: Celestial            # Name for the distribution archive
-  MARKETPLACE_ITEM_ID: 800        # Replace with your actual marketplace item ID
+  MARKETPLACE_ITEM_ID: 835        # Replace with your actual marketplace item ID
 
 jobs:
   build:
